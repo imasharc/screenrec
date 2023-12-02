@@ -1,8 +1,12 @@
-# Screen Recorder
+# Screen Recorder GUI
+
+![office2](https://github.com/imasharc/screenrec/assets/60002742/a189d056-1343-454e-83a9-fed681de22ca)
+
+https://github.com/imasharc/screenrec/assets/60002742/6424d70a-4bd1-4e1e-9cf9-f3f8fcf6096f
 
 ## Overview
 
-Screen Recorder is a simple Python application that allows you to capture your screen along with the mouse cursor's position. It provides a user-friendly graphical interface using the Tkinter library, and the recording is done using OpenCV and PyAutoGUI.
+Screen Recorder is a simple Python GUI application that allows you to capture your screen along with the mouse cursor's position. It provides a user-friendly graphical interface using the Tkinter library, and the recording is done using OpenCV and PyAutoGUI.
 
 ## Features
 
