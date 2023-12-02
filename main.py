@@ -7,6 +7,8 @@ import threading
 from datetime import datetime
 from pathlib import Path
 from PIL import Image, ImageTk
+import sounddevice as sd
+from scipy.io.wavfile import write
 
 class ScreenRecorderGUI:
     def __init__(self, master):
@@ -33,14 +35,41 @@ class ScreenRecorderGUI:
         self.mouse_label = tk.Label(self.master, text="Mouse Position: (0, 0)", font=("Arial", 12))
         self.mouse_label.pack(pady=5)
 
+        self.audio_recording = None
+        self.fs = 44100  # Sample rate
+        self.recording_thread = None
+
         tk.Button(self.master, text="Start Recording", command=self.start_recording, width=20).pack(pady=5)
         tk.Button(self.master, text="Stop Recording", command=self.stop_recording, width=20).pack()
+    
+    def start_audio_recording(self):
+        self.audio_recording = sd.InputStream(samplerate=self.fs, channels=2)
+        self.audio_recording.start()
+        self.recording_thread = threading.Thread(target=self.record_audio)
+        self.recording_thread.start()
+
+    def record_audio(self):
+        audio_data = []
+        while self.audio_recording.active:
+            data, overflowed = self.audio_recording.read(1024)
+            if not overflowed:
+                audio_data.append(data)
+        output_audio_file = Path.home() / "Documents" / f"audio_{datetime.now().strftime('%Y%m%d%H%M%S')}.wav"
+        write(output_audio_file, self.fs, np.concatenate(audio_data))  # Save as WAV file
+
+    def stop_audio_recording(self):
+        if self.audio_recording is not None:
+            self.audio_recording.stop()
+            self.audio_recording.close()
+            self.audio_recording = None
+            self.recording_thread.join()
 
     def start_recording(self):
         if not self.recording:
             self.recording = True
             self.start_time = datetime.now()
             threading.Thread(target=self.record).start()
+            self.start_audio_recording()  # Start audio recording
 
     def record(self):
         screen_size = pyautogui.size()
@@ -78,6 +107,7 @@ class ScreenRecorderGUI:
         self.recording = False
         self.label.config(text="")
         self.mouse_label.config(text="Mouse Position: (0, 0)")
+        self.stop_audio_recording()  # Stop audio recording
 
 if __name__ == "__main__":
     root = tk.Tk()
