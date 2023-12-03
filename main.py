@@ -18,8 +18,9 @@ class ScreenRecorderGUI:
     def __init__(self, window):
         self.window = window
         self.window.title("Screen Recorder")
-        self.window.geometry("800x600")  # Set window size to 800x600
+        self.window.geometry("800x800")  # Set window size to 800x600
 
+        # Initialize variables used in record
         self.recording = False
         self.start_time = None
 
@@ -39,18 +40,30 @@ class ScreenRecorderGUI:
         self.mouse_label = tk.Label(self.window, text="Mouse Position: (0, 0)", font=("Arial", 12))
         self.mouse_label.pack(pady=5)
 
+        # Audio recording
         self.audio_recording = None
         self.fs = 44100  # Sample rate
         self.recording_thread = None
+
+        # Create a new ttk.Progressbar to display the audio level
+        self.audio_level = ttk.Progressbar(self.window, length=200)
+        self.audio_level.pack()
 
         tk.Button(self.window, text="Start Recording", command=self.start_recording, width=20).pack(pady=5)
         tk.Button(self.window, text="Stop Recording", command=self.stop_recording, width=20).pack()
     
     def start_audio_recording(self):
-        self.audio_recording = sd.InputStream(samplerate=self.fs, channels=2)
+        self.audio_recording = sd.InputStream(samplerate=self.fs, channels=2, callback=self.audio_callback)
         self.audio_recording.start()
         self.recording_thread = threading.Thread(target=self.record_audio)
         self.recording_thread.start()
+        self.visualizer_thread = threading.Thread(target=self.run_visualizer)
+        self.visualizer_thread.start()
+
+    def audio_callback(self, indata, frames, time, status):
+        volume_norm = np.linalg.norm(indata) * 10
+        print("|" * int(volume_norm))  # For testing purposes
+        self.audio_level['value'] = volume_norm
 
     def record_audio(self):
         audio_data = []
@@ -67,7 +80,12 @@ class ScreenRecorderGUI:
             self.audio_recording.stop()
             self.audio_recording.close()
             self.audio_recording = None
-            self.recording_thread.join()
+            self.recording_thread.join()  # Wait for the audio recording to finish
+            if hasattr(self, 'visualizer_thread'):
+                self.visualizer_thread.join()  # Wait for the visualizer to finish
+            print(f"Finished recording audio file: {str(self.output_audio_file)}")
+            if not self.output_audio_file.exists():
+                print(f"Error: The file {str(self.output_audio_file)} does not exist.")
 
     def start_recording(self):
         if not self.recording:
