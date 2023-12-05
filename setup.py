@@ -4,7 +4,7 @@ import sys
 def install_libraries():
     try:
         # Install required Python libraries
-        subprocess.run([sys.executable, "-m", "pip", "install", "opencv-python", "pyautogui", "Pillow", "screeninfo", "sounddevice", "scipy", "matplotlib"])
+        subprocess.run([sys.executable, "-m", "pip", "install", "opencv-python", "pyautogui", "Pillow", "moviepy", "screeninfo", "sounddevice", "scipy", "matplotlib"])
 
         print("Libraries installed successfully!")
 
