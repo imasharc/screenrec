@@ -102,6 +102,7 @@ class ScreenRecorderGUI:
         out = cv2.VideoWriter(str(self.output_file), fourcc, 10, (800, 400))
 
         try:
+            # Continue capturing screenshots (real-time recording helper) as long as recording is True
             while self.recording:
                 screenshot = pyautogui.screenshot()
                 frame = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
@@ -112,10 +113,12 @@ class ScreenRecorderGUI:
                 mouse_x, mouse_y = pyautogui.position()
                 self.mouse_label.config(text=f"Mouse Position: ({mouse_x}, {mouse_y})")
 
+                # Clear the canvas
                 self.canvas.delete("all")
                 elapsed_time = datetime.now() - self.start_time
                 self.label.config(text=str(elapsed_time))
 
+                # Draw the image on the canvas
                 self.canvas.create_image(0, 0, anchor=tk.NW, image=self.img_tk)
 
                 canvas_x = (mouse_x / screen_size.width) * 800
@@ -156,7 +159,7 @@ class ScreenRecorderGUI:
         # Wait for the video file to finish writing
         self.window.after(3000, self.merge_audio_video)  # Merge audio and video after 15 seconds
 
-        # Close the progress window after 15 seconds
+        # Close the progress window after 3`` seconds
         self.window.after(3000, progress_window.destroy)
 
     def merge_audio_video(self):
